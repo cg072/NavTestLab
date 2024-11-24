@@ -1,5 +1,6 @@
 package com.kch.navtestlab.ui.screen.main
 
+import android.media.Image
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -11,9 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
+import androidx.navigation.Navigator
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navOptions
 import com.kch.navtestlab.ui.navigation.Home
 import com.kch.navtestlab.ui.navigation.Order
 import com.kch.navtestlab.ui.navigation.Product
@@ -72,6 +75,13 @@ fun NavTestLabHost(navController: NavHostController, innerPadding: PaddingValues
                             inclusive = true
                         }
                     }
+                },
+                onClickItem = { name ->
+                    navController.navigate(
+                        Product.route,
+                        navOptions = navOptions {  },
+                        ItemInformation(name, "")
+                    )
                 }
             )
         }
@@ -80,7 +90,10 @@ fun NavTestLabHost(navController: NavHostController, innerPadding: PaddingValues
             route = Product.route,
             enterTransition = { moveBottomUp() },
             exitTransition = { moveBottomDown() }
-        ) {
+        ) { navBackStackEntry ->
+
+            val item = navBackStackEntry.arguments?.get("item")
+
             ProductScreen(
                 navigateWithSingleTop = {
                     navController.navigate(route = Order.route) {
@@ -95,6 +108,8 @@ fun NavTestLabHost(navController: NavHostController, innerPadding: PaddingValues
         }
     }
 }
+
+data class ItemInformation(val name: String, val content: String): Navigator.Extras
 
 /**
  * XML 기반 애니메이션 리소스는 Compose에서 기본적으로 지원되지 않기
