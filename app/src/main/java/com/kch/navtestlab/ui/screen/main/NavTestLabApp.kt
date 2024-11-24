@@ -1,5 +1,8 @@
 package com.kch.navtestlab.ui.screen.main
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -39,18 +42,73 @@ fun NavTestLabHost(navController: NavHostController, innerPadding: PaddingValues
     ) {
 
         composable(route = Home.route) {
-            HomeScreen()
+            HomeScreen(
+                navigateOrder = {
+                    navController.navigate(route = Order.route)
+                }
+            )
         }
 
-        composable(route = Order.route) {
-            OrderScreen()
+        composable(
+            route = Order.route,
+            enterTransition = { moveBottomUp() },
+            exitTransition = { moveBottomDown() }
+        ) {
+            OrderScreen(
+                navigateProductScreen = {
+                    // 컴포저블로 이동
+                    navController.navigate(route = Product.route)
+                },
+                navigateWithPopUpTo = {
+                    navController.navigate(Product.route) {
+                        // Home에서 Product 사이 백스택 지우기
+                        popUpTo(Home.route)
+                    }
+                },
+                navigateWithInclusive = {
+                    navController.navigate(Product.route) {
+                        // Home 포함한 모든 백 스택 지우기
+                        popUpTo(Home.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
 
-        composable(route = Product.route) {
-            ProductScreen()
+        composable(
+            route = Product.route,
+            enterTransition = { moveBottomUp() },
+            exitTransition = { moveBottomDown() }
+        ) {
+            ProductScreen(
+                navigateWithSingleTop = {
+                    navController.navigate(route = Order.route) {
+                        popUpTo(Order.route) {
+                            inclusive = true
+                        }
+
+                        launchSingleTop = true // 최상위 화면을 다시 생성하지 않고 재활용
+                    }
+                }
+            )
         }
     }
 }
+
+/**
+ * XML 기반 애니메이션 리소스는 Compose에서 기본적으로 지원되지 않기
+ * 때문에 Compose 스타일로 애니메이션을 정의
+ */
+private fun moveBottomDown() = slideOutVertically(
+    targetOffsetY = { it },
+    animationSpec = tween(300)
+)
+
+private fun moveBottomUp() = slideInVertically(
+    initialOffsetY = { it }, // 시작 위치
+    animationSpec = tween(300) // 지속 시간
+)
 
 @Preview(showBackground = true)
 @Composable
